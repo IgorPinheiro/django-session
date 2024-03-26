@@ -9,8 +9,8 @@ def login(request):
     return render(request, 'login.html')
 
 def cadastro(request):
-    
-    return render(request, 'cadastro.html')
+    status = request.GET.get('status')
+    return render(request, 'cadastro.html',{'status': status})
 
 def valida_cadastro(request):
     nome = request.POST.get('nome')
@@ -19,18 +19,18 @@ def valida_cadastro(request):
 
     # Teste de nome ou email sem carictere.
     if len(nome.strip()) == 0 or len(email.strip()) == 0:
-        return redirect('/auth/login/?status=1')
+        return redirect('/auth/cadastro/?status=1')
     
     # Teste do tamanho da senha
     if len(senha) < 8:
-        return redirect('/auth/login/?status=2')
+        return redirect('/auth/cadastro/?status=2')
     
     # Testando e-mail, se é igual ao que já existe no db. 
     usuario = Usuario.objects.filter(email = email)
     
     # Passando o teste do email.
     if len(usuario) > 0:
-        return redirect('/auth/login/?status=3')
+        return redirect('/auth/cadastro/?status=3')
     
     # Testando e se passar gravando no db com a senha criptografada.
     try:
@@ -38,7 +38,7 @@ def valida_cadastro(request):
         usuario = Usuario(nome = nome, email = email, senha = senha)
 
         usuario.save()
-        return redirect('/auth/login/?status=0')
+        return redirect('/auth/cadastro/?status=0')
     
     except:
-        return redirect('/auth/login/?status=4')
+        return redirect('/auth/cadastro/?status=4')
