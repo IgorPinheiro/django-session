@@ -49,7 +49,7 @@ def valida_cadastro(request):
 def valida_login(request):
     email = request.POST.get('email')
     senha = request.POST.get('senha')
-    senha = sha256(senha.enconde()).hexdigest()
+    senha = sha256(senha.encode()).hexdigest()
 
     usuario = Usuario.objects.filter(email = email).filter(senha = senha)
 
@@ -58,5 +58,9 @@ def valida_login(request):
         return redirect('/auth/login/?status=1')
     
     elif len(usuario) > 0:
-        
-        return HttpResponse(f'{email} {senha}')
+        request.session['logado'] = True
+        return redirect('/plataforma/home/')
+    
+def sair(request):
+    request.session['logado'] = None
+    return redirect('/auth/login/')
