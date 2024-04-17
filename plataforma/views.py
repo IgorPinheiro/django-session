@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 
 def home(request):
-    if request.session['logado']:
-        return HttpResponse('Você está no sistema')
+    if request.session.get('logado'):
+        return render(request, 'home.html') #Nuca colocar / neste código, me confundi o coloquei e estava infomrando o caminho errado.
     else:
         return redirect('/auth/login/?status=2')
