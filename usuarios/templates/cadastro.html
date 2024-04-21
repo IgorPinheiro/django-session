@@ -6,37 +6,14 @@
 {% block 'conteudo' %}
 <div class='container'>
     <br>
-    {% if status == '0' %}
-    <div class="alert alert-success" role="alert">
-        Usuário Cadastrado com scuesso
-    </div>
-    {% endif %}
-    
-    {% if status == '1' %}
-    <div class="alert alert-danger" role="alert">
-        Preencher nome e email corretamente, não pode ficar vazio. 
-    </div>
+    {% if messages %}
+        {% for i in messages  %}
+            <div class="alert alert-{{i.tags}}" role="alert">
+                {{i}}
+            </div>
+        {% endfor %}
     {% endif %}
 
-    {% if status == '2' %}
-    <div class="alert alert-danger" role="alert">
-        Prencher senha maior que 7 digitos! 
-    </div>
-    {% endif %}
-
-    {% if status == '3' %}
-    <div class="alert alert-danger" role="alert">
-       email já cadastrado.  
-    </div>
-    {% endif %}
-
-    {% if status == '4' %}
-    <div class="alert alert-danger" role="alert">
-       Erro interno do sistema. :\  
-    </div>
-    {% endif %}
-    
-    
     <div class='row'>
         <div class='col-md-3'>
         </div>

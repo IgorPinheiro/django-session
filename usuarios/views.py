@@ -3,9 +3,12 @@ from django.http import HttpResponse
 from .models import Usuario
 from django.shortcuts import redirect
 from hashlib import sha256
+from django.contrib import messages
+from django.contrib.messages import constants
 
 
 def login(request):
+    
     status = request.GET.get('status')
     return render(request, 'login.html', {'status': status})
 
@@ -20,18 +23,21 @@ def valida_cadastro(request):
 
     # Teste de nome ou email sem carictere.
     if len(nome.strip()) == 0 or len(email.strip()) == 0:
-        return redirect('/auth/cadastro/?status=1')
+        messages.add_message(request, constants.ERROR, 'Preencher nome e email corretamente, não pode ficar vazio.')
+        return redirect('/auth/cadastro/')
     
     # Teste do tamanho da senha
     if len(senha) < 8:
-        return redirect('/auth/cadastro/?status=2')
+        messages.add_message(request, constants.ERROR, 'Prencher senha maior que 7 digitos!')
+        return redirect('/auth/cadastro/')
     
     # Testando e-mail, se é igual ao que já existe no db. 
     usuario = Usuario.objects.filter(email = email)
     
     # Passando o teste do email.
     if len(usuario) > 0:
-        return redirect('/auth/cadastro/?status=3')
+        messages.add_message(request, constants.ERROR, 'Email já cadastrado')
+        return redirect('/auth/cadastro/')
     
     # Testando e se passar gravando no db com a senha criptografada.
     try:
@@ -39,10 +45,12 @@ def valida_cadastro(request):
         usuario = Usuario(nome = nome, email = email, senha = senha)
 
         usuario.save()
-        return redirect('/auth/cadastro/?status=0')
+        messages.add_message(request, constants.SUCCESS, 'Usuário Cadastrado com scuesso')
+        return redirect('/auth/cadastro/')
     
     except:
-        return redirect('/auth/cadastro/?status=4')
+        messages.add_message(request, constants.ERROR, 'Erro interno do sitema')
+        return redirect('/auth/cadastro/')
     
 
 
@@ -55,7 +63,8 @@ def valida_login(request):
 
 
     if len(usuario) == 0:
-        return redirect('/auth/login/?status=1')
+        messages.add_message(request, constants.WARNING, 'Email ou Senha Inválido')
+        return redirect('/auth/login/')
     
     elif len(usuario) > 0:
         request.session['logado'] = True
@@ -64,6 +73,7 @@ def valida_login(request):
     
 def sair(request):
     #return HttpResponse(request.session.get_expiry_age())
-    return HttpResponse(request.session.get_expiry_date())
-    #request.session.flush()
-    #return redirect('/auth/login/')
+    #return HttpResponse(request.session.get_expiry_date())
+    request.session.flush()
+    messages.add_message(request, constants.WARNING, 'Faça login antes de acessar a plataforma')
+    return redirect('/auth/login/')
