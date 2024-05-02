@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Usuario
+from .models import Users
 
-admin.site.register(Usuario)
-# Register your models here.
+#admin.site.register(UsuarioEndereco)
+admin.site.register(Users)

@@ -7,9 +7,9 @@
 <div class='container'>
     <br>
     {% if messages %}
-        {% for i in messages  %}
-            <div class="alert alert-{{i.tags}}" role="alert">
-                {{i}}
+        {% for message in messages  %}
+            <div class="alert {{message.tags }}" role="alert">
+                {{message}}
             </div>
         {% endfor %}
     {% endif %}
@@ -30,6 +30,14 @@
                 <br>
                 <label>Senha:</label>
                 <input name = 'senha' class='form-control' type='password' placeholder='Senha...'>
+                <h2>Cadastro Endereço</h2>
+                <hr>
+                <label>Rua:</label>
+                <input name = 'rua' class='form-control' type='text' placeholder='Rua...'>
+                <label>Numero:</label>
+                <input name = 'numero' class='form-control' type='text' placeholder='numero...'>
+                <label>CEP:</label>
+                <input name = 'cep' class='form-control' type='text' placeholder='CEP...'>
                 <br>
                 <input class='btn btn-success btn-lg' type='submit' value='Enviar'>
                 <a href={% url 'login' %} class='btn btn-info btn-lg'>Login</a>

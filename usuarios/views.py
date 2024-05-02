@@ -1,18 +1,22 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from .models import Usuario
 from django.shortcuts import redirect
 from hashlib import sha256
-from django.contrib import messages
+from django.contrib import messages, auth
 from django.contrib.messages import constants
+from django.contrib.auth.models import User
+
 
 
 def login(request):
-    
+    if request.user.is_authenticated:
+        return redirect('/plataforma/home')
     status = request.GET.get('status')
     return render(request, 'login.html', {'status': status})
 
 def cadastro(request):
+    if request.user.is_authenticated:
+        return redirect('/plataforma/home')
     status = request.GET.get('status')
     return render(request, 'cadastro.html',{'status': status})
 
@@ -20,6 +24,9 @@ def valida_cadastro(request):
     nome = request.POST.get('nome')
     email = request.POST.get('email')
     senha = request.POST.get('senha')
+    rua = request.POST.get('rua')
+    numero = request.POST.get('numero')
+    cep = request.POST.get('cep')
 
     # Teste de nome ou email sem carictere.
     if len(nome.strip()) == 0 or len(email.strip()) == 0:
@@ -31,22 +38,32 @@ def valida_cadastro(request):
         messages.add_message(request, constants.ERROR, 'Prencher senha maior que 7 digitos!')
         return redirect('/auth/cadastro/')
     
-    # Testando e-mail, se é igual ao que já existe no db. 
-    usuario = Usuario.objects.filter(email = email)
     
     # Passando o teste do email.
-    if len(usuario) > 0:
+    if User.objects.filter(email = email).exists():
         messages.add_message(request, constants.ERROR, 'Email já cadastrado')
+        return redirect('/auth/cadastro/')
+    
+    if User.objects.filter(username = nome).exists():
+        messages.add_message(request, constants.ERROR, 'Já existe um usuário com este nome!')
         return redirect('/auth/cadastro/')
     
     # Testando e se passar gravando no db com a senha criptografada.
     try:
-        senha = sha256(senha.encode()).hexdigest()
-        usuario = Usuario(nome = nome, email = email, senha = senha)
 
+        usuario = User.objects.create_user(username = nome, 
+                                           email = email, 
+                                           password = senha)
         usuario.save()
+
+        usuario_endereco = UsuarioEndereco(rua = rua, 
+                                           numero = numero, 
+                                           cep = cep, 
+                                           usuario = usuario)
+        usuario_endereco.save()
+
         messages.add_message(request, constants.SUCCESS, 'Usuário Cadastrado com scuesso')
-        return redirect('/auth/cadastro/')
+        return redirect('/auth/login/')
     
     except:
         messages.add_message(request, constants.ERROR, 'Erro interno do sitema')
@@ -55,25 +72,23 @@ def valida_cadastro(request):
 
 
 def valida_login(request):
-    email = request.POST.get('email')
+    nome = request.POST.get('nome')
     senha = request.POST.get('senha')
-    senha = sha256(senha.encode()).hexdigest()
-
-    usuario = Usuario.objects.filter(email = email).filter(senha = senha)
-
-
-    if len(usuario) == 0:
+    
+    usuario = auth.authenticate(request, username = nome, password = senha)
+    
+    if not usuario:
         messages.add_message(request, constants.WARNING, 'Email ou Senha Inválido')
         return redirect('/auth/login/')
     
-    elif len(usuario) > 0:
-        request.session['logado'] = True
-        request.session['usuario_id'] = usuario[0].id
+    else :
+        auth.login(request, usuario)
         return redirect('/plataforma/home/')
     
 def sair(request):
+    auth.logout(request)
     #return HttpResponse(request.session.get_expiry_age())
     #return HttpResponse(request.session.get_expiry_date())
-    request.session.flush()
+    #request.session.flush()
     messages.add_message(request, constants.WARNING, 'Faça login antes de acessar a plataforma')
     return redirect('/auth/login/')
