@@ -4,7 +4,8 @@ from django.shortcuts import redirect
 from hashlib import sha256
 from django.contrib import messages, auth
 from django.contrib.messages import constants
-from django.contrib.auth.models import User
+#from django.contrib.auth.models import User
+from .models import Users as User # Estou usando um alias para não precisar modificar o nome User para Users.
 
 
 
@@ -51,16 +52,14 @@ def valida_cadastro(request):
     # Testando e se passar gravando no db com a senha criptografada.
     try:
 
-        usuario = User.objects.create_user(username = nome, 
-                                           email = email, 
-                                           password = senha)
+        usuario = User.objects.create_user(username = nome,email = email, password = senha, rua = rua, numero = numero, cep = cep)
         usuario.save()
 
-        usuario_endereco = UsuarioEndereco(rua = rua, 
-                                           numero = numero, 
-                                           cep = cep, 
-                                           usuario = usuario)
-        usuario_endereco.save()
+        # usuario_endereco = UsuarioEndereco(rua = rua, 
+        #                                    numero = numero, 
+        #                                    cep = cep, 
+        #                                    usuario = usuario)
+        # usuario_endereco.save()
 
         messages.add_message(request, constants.SUCCESS, 'Usuário Cadastrado com scuesso')
         return redirect('/auth/login/')
